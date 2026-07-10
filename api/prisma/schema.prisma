@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Part {
+  id String @id @default(cuid())
+  partNumber String @unique
+  description String
+  brand String
+  category String
+  productGroup String?
+  upc String?
+  weight Float?
+  height Float?
+  width Float?
+  depth Float?
+  cubage Float?
+  oeManufacturer String?
+  countryOfOrig String?
+  tariffNo String?
+  scheduleBCode String?
+  price Decimal?
+  coreCharge Decimal?
+  wholesalePrice Decimal?
+  images String[]
+  active Boolean @default(true)
+  lastSyncedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WholesaleStatus {
+    NONE
+    PENDING
+    APPROVED
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  name String
+  company String?
+  wholesaleStatus WholesaleStatus @default(NONE)
+  isAdmin Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
