@@ -1,34 +1,18 @@
-import Link from 'next/link'
+// storefront/app/page.js
+import Hero from './components/Hero'
+import Services from './components/Services'
+import WhyChooseUs from './components/WhyChooseUs'
+import Contact from './components/Contact'
+import Form from './components/Form'
 
-async function getParts() {
-  const response = await fetch('http://localhost:3000/parts', {
-    headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    cache: 'no-store'
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch parts')
-  }
-
-  return response.json()
-}
-
-export default async function PartsPage() {
-  const parts = await getParts()
-
+export default function Home() {
   return (
-    <main>
-      <h1>Parts Catalog</h1>
-      <ul>
-        {parts.map(part => (
-          <li key={part.id}>
-            <Link href={`/parts/${part.id}`}>
-              <strong>{part.partNumber}</strong> — {part.description} ({part.brand})
-              {part.price && <span> — ${part.price}</span>}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <>
+      <Hero />
+      <Services />
+      <WhyChooseUs />
+      <Contact />
+      <Form />
+    </>
   )
 }
