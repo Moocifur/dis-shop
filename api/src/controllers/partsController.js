@@ -6,13 +6,19 @@ const filterWholesalePrice = (part, canSeeWholesale) => {
     return rest;
 };
 
-const getAllParts = async (req, res) => {
+const getCanSeeWholesale = async (user) => {
+    if (!user) return false;
+
     const requester = await prisma.user.findUnique({
-        where: { id: req.user.userId },
-        select:{ wholesaleStatus: true, isAdmin: true }
+        where: { id: user.userId },
+        select: { wholesaleStatus: true, isAdmin: true }
     });
 
-    const canSeeWholesale = requester?.isAdmin || requester?.wholesaleStatus === 'APPROVED';
+    return requester?.isAdmin || requester?.wholesaleStatus === 'APPROVED';
+};
+
+const getAllParts = async (req, res) => {
+    const canSeeWholesale = await getCanSeeWholesale(req.user);
 
     const parts = await prisma.part.findMany();
     res.json(parts.map(part => filterWholesalePrice(part, canSeeWholesale)));
@@ -27,28 +33,28 @@ const getPartById = async (req, res) => {
         return res.status(404).json({ message: 'Part not found' });
     }
 
-    const requester = await prisma.user.findUnique({
-        where: { id: req.user.userId },
-        select: { wholesaleStatus: true, isAdmin: true }
-    });
-
-    const canSeeWholesale = requester?.isAdmin || requester?.wholesaleStatus === 'APPROVED';
+    const canSeeWholesale = await getCanSeeWholesale(req.user);
 
     res.json(filterWholesalePrice(part, canSeeWholesale));
 };
 
 const createPart = async (req, res) => {
+    const { partNumber, description, brand, category, price, coreCharge, wholesalePrice } = req.body;
+
     const part = await prisma.part.create({
-        data: req.body
+        data: { partNumber, description, brand, category, price, coreCharge, wholesalePrice }
     });
     res.status(201).json(part);
 };
 
 const updatePart = async (req, res) => {
     const { id } = req.params;
+    
+    const { partNumber, description, brand, category, price, coreCharge, wholesalePrice } = req.body;
+
     const part = await prisma.part.update({
         where: { id },
-        data: req.body
+        data: { partNumber, description, brand, category, price, coreCharge, wholesalePrice }
     });
     res.json(part);
 };

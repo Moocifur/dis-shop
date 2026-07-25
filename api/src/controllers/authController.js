@@ -5,18 +5,32 @@ const prisma = require('../middleware/prisma');
 const register = async (req, res) => {
     const { email, password, name, company } = req.body;
 
+    if (!email || !password || !name) {
+        return res.status(400).json({ message: 'Email, password, and name are required' });
+    }
+
+    if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-        data: {
-            email,
-            password: hashed,
-            name,
-            company,
-        },
-    });
-
-    res.json({ message: 'User created', userId: user.id });
+    try {
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashed,
+                name,
+                company,
+            },
+        });
+        res.json({ message: 'User created', userId: user.id });
+    } catch (err) {
+        if (err.code === 'P2002') {
+            return res.status(409).json({ message: 'Email already in use' });
+        }
+        throw err;
+    }
 };
 
 const login = async (req, res) => {
@@ -34,8 +48,21 @@ const login = async (req, res) => {
         { expiresIn: '7d' }
     );
 
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7 * 1000
+    });
+
     res.json({ token });
 };
 
-module.exports = { register, login };
+const logout = (req, res) => {
+    res.clearCookie('token', { path: '/' });
+    res.json({ message: 'Logged out' });
+};
+
+module.exports = { register, login, logout };
 

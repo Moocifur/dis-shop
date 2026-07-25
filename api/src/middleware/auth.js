@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
 
-const authenticate = (req, res, next) => {
+const extractToken = (req) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ message: 'No token provided' });
+    const headerToken = authHeader?.split(' ')[1];
+    return headerToken || req.cookies?.token;
+};
 
-    const token = authHeader.split(' ')[1];
+const authenticate = (req, res, next) => {
+    const token = extractToken(req);
     if (!token) return res.status(401).json({ message: 'No token provided' });
 
     try {
@@ -16,6 +19,20 @@ const authenticate = (req, res, next) => {
     }
 };
 
+const optionalAuthenticate = (req, res, next) => {
+    const token = extractToken(req);
+
+    if (token) {
+        try {
+            req.user = jwt.verify(token, process.env.JWT_SECRET);
+        } catch (err) {
+            // invalid or expired token — proceed as an anonymous request
+        }
+    }
+
+    next();
+};
+
 const requireAdmin = (req, res, next) => {
     if (!req.user || !req.user.isAdmin) {
         return res.status(403).json({ message: 'Admin access required' });
@@ -23,4 +40,4 @@ const requireAdmin = (req, res, next) => {
     next();
 }
 
-module.exports = { authenticate, requireAdmin };
+module.exports = { authenticate, optionalAuthenticate, requireAdmin };
