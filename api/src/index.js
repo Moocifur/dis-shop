@@ -5,6 +5,7 @@ require('dotenv').config();
 const partsRouter = require('./routes/parts');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const ordersRouter = require('./routes/orders');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,8 @@ app.use('/parts', partsRouter);
 app.use('/auth', authRouter);
 
 app.use('/users', usersRouter);
+
+app.use('/orders', ordersRouter);
 
 app.get('/', (req, res) => {
     res.json({ message: 'DIS Shop API is running' });
