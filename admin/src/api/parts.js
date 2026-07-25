@@ -1,12 +1,8 @@
-const API_URL = 'http://localhost:3000';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function getParts() {
     const response = await fetch(`${API_URL}/parts`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+        credentials: 'include'
     });
 
     if (!response.ok) {
@@ -19,10 +15,8 @@ export async function getParts() {
 export async function createPart(data) {
     const response = await fetch(`${API_URL}/parts`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data)
     });
 
@@ -36,10 +30,8 @@ export async function createPart(data) {
 export async function updatePart(id, data) {
     const response = await fetch(`${API_URL}/parts/${id}`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data)
     });
 
@@ -53,11 +45,10 @@ export async function updatePart(id, data) {
 export async function deletePart(id) {
     const response = await fetch(`${API_URL}/parts/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+        credentials: 'include'
     });
 
     if (!response.ok) {
         throw new Error('Failed to delete part');
     }
 }
-

@@ -1,12 +1,8 @@
-const API_URL = 'http://localhost:3000';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function getUsers() {
     const response = await fetch(`${API_URL}/users`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+        credentials: 'include'
     });
 
     if (!response.ok) {
@@ -19,7 +15,7 @@ export async function getUsers() {
 export async function approveWholesale(id) {
     const response = await fetch(`${API_URL}/users/${id}/approve-wholesale`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+        credentials: 'include'
     });
 
     if (!response.ok) {
@@ -32,7 +28,7 @@ export async function approveWholesale(id) {
 export async function makeAdmin(id) {
     const response = await fetch(`${API_URL}/users/${id}/make-admin`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+        credentials: 'include'
     });
 
     if (!response.ok) {

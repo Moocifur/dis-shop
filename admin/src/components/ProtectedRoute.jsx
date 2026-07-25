@@ -1,11 +1,24 @@
+import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
+import { getMe } from '../api/auth'
 
 function ProtectedRoute({ children }) {
-    const token = localStorage.getItem('token')
+    const [status, setStatus] = useState('checking')
 
-    if (!token) {
-        return <Navigate to="/login" />
+    useEffect(() => {
+        getMe()
+            .then(() => setStatus('authenticated'))
+            .catch(() => setStatus('unauthenticated'))
+    }, [])
+
+    if (status === 'checking') {
+        return (
+            <div className="min-h-screen flex items-center justify-center text-gray-400">
+                Loading...
+            </div>
+        )
     }
+    if (status === 'unauthenticated') return <Navigate to="/login" />
 
     return children
 }
