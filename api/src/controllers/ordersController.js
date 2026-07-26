@@ -1,13 +1,6 @@
 const prisma = require('../middleware/prisma');
 const { Prisma } = require('@prisma/client');
-
-const getCanSeeWholesale = async (userId) => {
-    const requester = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { isAdmin: true, wholesaleStatus: true }
-    });
-    return requester?.isAdmin || requester?.wholesaleStatus === 'APPROVED';
-};
+const { getWholesaleInfo, computeWholesalePrice } = require('../services/wholesale');
 
 const createOrder = async (req, res) => {
     const { items } = req.body;
@@ -36,7 +29,7 @@ const createOrder = async (req, res) => {
         }
     }
 
-    const canSeeWholesale = await getCanSeeWholesale(req.user.userId);
+    const { canSeeWholesale, discountPercent } = await getWholesaleInfo(req.user);
 
     let subtotal = new Prisma.Decimal(0);
     let coreChargeTotal = new Prisma.Decimal(0);
@@ -45,7 +38,8 @@ const createOrder = async (req, res) => {
     for (const { partId, quantity } of items) {
         const part = partsById[partId];
         const qty = new Prisma.Decimal(quantity);
-        const unitPrice = canSeeWholesale && part.wholesalePrice ? part.wholesalePrice : part.price;
+        const wholesalePrice = canSeeWholesale ? computeWholesalePrice(part.price, discountPercent) : null;
+        const unitPrice = wholesalePrice ?? part.price;
         const coreCharge = part.coreCharge;
 
         subtotal = subtotal.plus(unitPrice.times(qty));
