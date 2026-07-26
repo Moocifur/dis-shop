@@ -22,7 +22,7 @@ function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-gray-800 p-8 rounded-xl">
+            <div className="w-full max-w-md bg-gray-800 p-6 sm:p-8 rounded-xl">
                 <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>

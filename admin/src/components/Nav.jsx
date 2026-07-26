@@ -11,25 +11,25 @@ function Nav() {
     }
 
     return (
-        <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-                <span className="font-bold text-lg">DIS Admin</span>
-                <Link to="/parts" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
-                    <Package className="w-4 h-4" />
-                    Parts
+        <nav className="bg-gray-800 border-b border-gray-700 px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto">
+                <span className="hidden sm:inline font-bold text-lg whitespace-nowrap">DIS Admin</span>
+                <Link to="/parts" className="flex items-center gap-2 hover:text-blue-400 transition-colors whitespace-nowrap">
+                    <Package className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Parts</span>
                 </Link>
-                <Link to="/users" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
-                    <UsersIcon className="w-4 h-4" />
-                    Users
+                <Link to="/users" className="flex items-center gap-2 hover:text-blue-400 transition-colors whitespace-nowrap">
+                    <UsersIcon className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Users</span>
                 </Link>
-                <Link to="/orders" className="flex items-center gap-2 hover:text-blue-400 transition-colors">
-                    <ClipboardList className="w-4 h-4" />
-                    Orders
+                <Link to="/orders" className="flex items-center gap-2 hover:text-blue-400 transition-colors whitespace-nowrap">
+                    <ClipboardList className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Orders</span>
                 </Link>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors">
+            <button onClick={handleLogout} className="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors shrink-0">
                 <LogOut className="w-4 h-4" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
             </button>
         </nav>
     )

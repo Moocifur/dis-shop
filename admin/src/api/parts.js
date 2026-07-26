@@ -49,6 +49,7 @@ export async function deletePart(id) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to delete part');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to delete part');
     }
 }

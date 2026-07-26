@@ -25,6 +25,35 @@ export async function approveWholesale(id) {
     return response.json();
 }
 
+export async function revokeWholesale(id) {
+    const response = await fetch(`${API_URL}/users/${id}/revoke-wholesale`, {
+        method: 'PUT',
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to revoke wholesale');
+    }
+
+    return response.json();
+}
+
+export async function setWholesaleDiscount(id, discountPercent) {
+    const response = await fetch(`${API_URL}/users/${id}/wholesale-discount`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ discountPercent })
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to update discount');
+    }
+
+    return response.json();
+}
+
 export async function makeAdmin(id) {
     const response = await fetch(`${API_URL}/users/${id}/make-admin`, {
         method: 'PUT',
@@ -33,6 +62,20 @@ export async function makeAdmin(id) {
 
     if (!response.ok) {
         throw new Error('Failed to make admin');
+    }
+
+    return response.json();
+}
+
+export async function removeAdmin(id) {
+    const response = await fetch(`${API_URL}/users/${id}/remove-admin`, {
+        method: 'PUT',
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to remove admin');
     }
 
     return response.json();
