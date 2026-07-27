@@ -3,7 +3,7 @@
 import { ShoppingCart } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 
-export default function AddToCartButton({ part, className }) {
+export default function AddToCartButton({ part, className = '', iconOnly = false }) {
     const { addToCart } = useCart()
 
     return (
@@ -13,10 +13,11 @@ export default function AddToCartButton({ part, className }) {
                 e.stopPropagation()
                 addToCart(part)
             }}
-            className={className ?? 'bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2'}
+            aria-label="Add to Cart"
+            className={`flex items-center justify-center gap-2 rounded-lg font-semibold transition-all active:scale-95 ${className || 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-4 py-2'}`}
         >
             <ShoppingCart className="w-4 h-4" />
-            <span>Add to Cart</span>
+            {!iconOnly && <span>Add to Cart</span>}
         </button>
     )
 }
