@@ -48,10 +48,12 @@ const login = async (req, res) => {
         { expiresIn: '7d' }
     );
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/',
         maxAge: 60 * 60 * 24 * 7 * 1000
     });
@@ -60,7 +62,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-    res.clearCookie('token', { path: '/' });
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    res.clearCookie('token', {
+        path: '/',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
+    });
     res.json({ message: 'Logged out' });
 };
 
