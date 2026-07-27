@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
 
@@ -10,6 +10,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirect') || '/'
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -26,7 +28,7 @@ export default function LoginPage() {
             return
         }
 
-        router.push('/')
+        router.push(redirectTo)
         router.refresh()
     }
 

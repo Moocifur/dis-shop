@@ -35,6 +35,21 @@ export async function fetchPart(id) {
     return response.json()
 }
 
+export async function fetchMe() {
+    const token = await getAuthToken()
+
+    const response = await fetch(`${process.env.API_URL}/users/me`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        cache: 'no-store'
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch account')
+    }
+
+    return response.json()
+}
+
 export async function fetchMyOrders() {
     const token = await getAuthToken()
 
