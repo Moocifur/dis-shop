@@ -1,10 +1,15 @@
 import Link from 'next/link'
-import { Package } from 'lucide-react'
+import { Package, ChevronLeft, ChevronRight } from 'lucide-react'
 import { fetchParts } from '@/lib/api'
 import AddToCartButton from '../components/AddToCartButton'
 
-export default async function PartsPage() {
-  const parts = await fetchParts()
+const PAGE_SIZE = 24
+
+export default async function PartsPage({ searchParams }) {
+  const params = await searchParams
+  const page = Math.max(1, Number(params?.page) || 1)
+  const { parts, total } = await fetchParts(page, PAGE_SIZE)
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
     <main className="py-20">
@@ -45,6 +50,38 @@ export default async function PartsPage() {
             </div>
             )
           })}
+        </div>
+
+        <div className="flex items-center justify-center gap-4 mt-12 text-sm">
+          {page > 1 ? (
+            <Link
+              href={`/parts?page=${page - 1}`}
+              className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Prev
+            </Link>
+          ) : (
+            <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
+              <ChevronLeft className="w-4 h-4" />
+              Prev
+            </span>
+          )}
+          <span className="text-gray-400">Page {page} of {totalPages}</span>
+          {page < totalPages ? (
+            <Link
+              href={`/parts?page=${page + 1}`}
+              className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </span>
+          )}
         </div>
       </div>
     </main>

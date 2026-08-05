@@ -5,10 +5,13 @@ async function getAuthToken() {
     return cookieStore.get('token')?.value
 }
 
-export async function fetchParts() {
+export async function fetchParts(page, limit) {
     const token = await getAuthToken()
+    const url = page && limit
+        ? `${process.env.API_URL}/parts?page=${page}&limit=${limit}`
+        : `${process.env.API_URL}/parts`
 
-    const response = await fetch(`${process.env.API_URL}/parts`, {
+    const response = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         cache: 'no-store'
     })
@@ -17,7 +20,9 @@ export async function fetchParts() {
         throw new Error('Failed to fetch parts')
     }
 
-    return response.json()
+    const parts = await response.json()
+    const total = Number(response.headers.get('X-Total-Count')) || parts.length
+    return { parts, total }
 }
 
 export async function fetchPart(id) {
