@@ -5,11 +5,18 @@ async function getAuthToken() {
     return cookieStore.get('token')?.value
 }
 
-export async function fetchParts(page, limit) {
+export async function fetchParts(page, limit, search) {
     const token = await getAuthToken()
-    const url = page && limit
-        ? `${process.env.API_URL}/parts?page=${page}&limit=${limit}`
-        : `${process.env.API_URL}/parts`
+    const params = new URLSearchParams()
+    if (page && limit) {
+        params.set('page', page)
+        params.set('limit', limit)
+    }
+    if (search) {
+        params.set('search', search)
+    }
+    const query = params.toString()
+    const url = query ? `${process.env.API_URL}/parts?${query}` : `${process.env.API_URL}/parts`
 
     const response = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},

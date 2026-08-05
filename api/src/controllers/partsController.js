@@ -9,20 +9,28 @@ const attachWholesalePrice = (part, canSeeWholesale, discountPercent) => {
 
 const getAllParts = async (req, res) => {
     const { canSeeWholesale, discountPercent } = await getWholesaleInfo(req.user);
-    const { page, limit } = req.query;
+    const { page, limit, search } = req.query;
+
+    const where = search ? {
+        OR: [
+            { partNumber: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { brand: { contains: search, mode: 'insensitive' } }
+        ]
+    } : undefined;
 
     let parts;
     if (page && limit) {
         const take = Number(limit);
         const skip = (Number(page) - 1) * take;
         const [pageOfParts, total] = await Promise.all([
-            prisma.part.findMany({ skip, take, orderBy: { partNumber: 'asc' } }),
-            prisma.part.count()
+            prisma.part.findMany({ where, skip, take, orderBy: { partNumber: 'asc' } }),
+            prisma.part.count({ where })
         ]);
         res.set('X-Total-Count', String(total));
         parts = pageOfParts;
     } else {
-        parts = await prisma.part.findMany();
+        parts = await prisma.part.findMany({ where });
     }
 
     res.json(parts.map(part => attachWholesalePrice(part, canSeeWholesale, discountPercent)));

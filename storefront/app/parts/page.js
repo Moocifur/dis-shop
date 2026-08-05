@@ -1,20 +1,81 @@
 import Link from 'next/link'
-import { Package, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Package, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { fetchParts } from '@/lib/api'
 import AddToCartButton from '../components/AddToCartButton'
 
 const PAGE_SIZE = 24
 
+function Pagination({ page, totalPages, query }) {
+  const hrefFor = (p) => `/parts?page=${p}${query ? `&q=${encodeURIComponent(query)}` : ''}`
+
+  return (
+    <div className="flex items-center justify-center gap-4 text-sm">
+      {page > 1 ? (
+        <Link
+          href={hrefFor(page - 1)}
+          className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Prev
+        </Link>
+      ) : (
+        <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
+          <ChevronLeft className="w-4 h-4" />
+          Prev
+        </span>
+      )}
+      <span className="text-gray-400">Page {page} of {totalPages}</span>
+      {page < totalPages ? (
+        <Link
+          href={hrefFor(page + 1)}
+          className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
+        >
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </Link>
+      ) : (
+        <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </span>
+      )}
+    </div>
+  )
+}
+
 export default async function PartsPage({ searchParams }) {
   const params = await searchParams
   const page = Math.max(1, Number(params?.page) || 1)
-  const { parts, total } = await fetchParts(page, PAGE_SIZE)
+  const query = params?.q || ''
+  const { parts, total } = await fetchParts(page, PAGE_SIZE, query)
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
     <main className="py-20">
       <div className="container mx-auto px-4">
         <h1 className="text-4xl font-bold mb-10 text-center">Parts Catalog</h1>
+
+        <form method="GET" action="/parts" className="relative max-w-xl mx-auto mb-10">
+          <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder="Search by part number, description, or brand..."
+            className="w-full pl-10 pr-3 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-white"
+          />
+        </form>
+
+        {parts.length === 0 && (
+          <p className="text-center text-gray-400 mb-10">No parts found{query ? ` for "${query}"` : ''}.</p>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mb-8">
+            <Pagination page={page} totalPages={totalPages} query={query} />
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {parts.map(part => {
             const discountPercent = part.wholesalePrice
@@ -52,36 +113,8 @@ export default async function PartsPage({ searchParams }) {
           })}
         </div>
 
-        <div className="flex items-center justify-center gap-4 mt-12 text-sm">
-          {page > 1 ? (
-            <Link
-              href={`/parts?page=${page - 1}`}
-              className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Prev
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
-              <ChevronLeft className="w-4 h-4" />
-              Prev
-            </span>
-          )}
-          <span className="text-gray-400">Page {page} of {totalPages}</span>
-          {page < totalPages ? (
-            <Link
-              href={`/parts?page=${page + 1}`}
-              className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-400 transition-colors"
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-800 text-gray-600 cursor-not-allowed">
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </span>
-          )}
+        <div className="mt-12">
+          <Pagination page={page} totalPages={totalPages} query={query} />
         </div>
       </div>
     </main>

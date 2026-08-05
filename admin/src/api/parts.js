@@ -1,7 +1,16 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function getParts(page, limit) {
-    const url = page && limit ? `${API_URL}/parts?page=${page}&limit=${limit}` : `${API_URL}/parts`;
+export async function getParts(page, limit, search) {
+    const params = new URLSearchParams();
+    if (page && limit) {
+        params.set('page', page);
+        params.set('limit', limit);
+    }
+    if (search) {
+        params.set('search', search);
+    }
+    const query = params.toString();
+    const url = query ? `${API_URL}/parts?${query}` : `${API_URL}/parts`;
     const response = await fetch(url, {
         credentials: 'include'
     });

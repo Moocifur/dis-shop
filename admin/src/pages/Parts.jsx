@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getParts, updatePart, deletePart } from '../api/parts'
 import Nav from '../components/Nav'
 import AddPartForm from '../components/AddPartForm'
-import { Pencil, Trash2, Check, X, Power, PowerOff, Package, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Pencil, Trash2, Check, X, Power, PowerOff, Package, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
@@ -10,14 +10,16 @@ function Parts() {
     const [parts, setParts] = useState([])
     const [total, setTotal] = useState(0)
     const [page, setPage] = useState(1)
+    const [search, setSearch] = useState('')
+    const [debouncedSearch, setDebouncedSearch] = useState('')
     const [error, setError] = useState('')
     const [editingId, setEditingId] = useState(null)
     const [editForm, setEditForm] = useState({})
 
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-    const loadPage = useCallback((p) => {
-        getParts(p, PAGE_SIZE)
+    const loadPage = useCallback((p, s) => {
+        getParts(p, PAGE_SIZE, s)
             .then(({ parts, total }) => {
                 setParts(parts)
                 setTotal(total)
@@ -26,11 +28,20 @@ function Parts() {
     }, [])
 
     useEffect(() => {
-        loadPage(page)
-    }, [page, loadPage])
+        const timeout = setTimeout(() => setDebouncedSearch(search), 300)
+        return () => clearTimeout(timeout)
+    }, [search])
+
+    useEffect(() => {
+        setPage(1)
+    }, [debouncedSearch])
+
+    useEffect(() => {
+        loadPage(page, debouncedSearch)
+    }, [page, debouncedSearch, loadPage])
 
     const handlePartAdded = () => {
-        loadPage(page)
+        loadPage(page, debouncedSearch)
     }
 
     const handleEditClick = (part) => {
@@ -56,7 +67,7 @@ function Parts() {
             const { imageUrl, ...rest } = editForm
             await updatePart(id, { ...rest, images: imageUrl ? [imageUrl] : [] })
             setEditingId(null)
-            loadPage(page)
+            loadPage(page, debouncedSearch)
         } catch (err) {
             setError(err.message)
         }
@@ -65,7 +76,7 @@ function Parts() {
     const handleDelete = async (id) => {
         try {
             await deletePart(id)
-            loadPage(page)
+            loadPage(page, debouncedSearch)
         } catch (err) {
             setError(err.message)
         }
@@ -74,7 +85,7 @@ function Parts() {
     const handleToggleActive = async (part) => {
         try {
             await updatePart(part.id, { active: !part.active })
-            loadPage(page)
+            loadPage(page, debouncedSearch)
         } catch (err) {
             setError(err.message)
         }
@@ -111,6 +122,17 @@ function Parts() {
                 <h1 className="text-2xl sm:text-3xl font-bold mb-6">Parts</h1>
                 {error && <p className="text-red-400 mb-4">{error}</p>}
                 <AddPartForm onPartAdded={handlePartAdded} />
+
+                <div className="relative mb-4">
+                    <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                        type="text"
+                        placeholder="Search by part number, description, or brand..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 bg-gray-900 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-white"
+                    />
+                </div>
 
                 <div className="flex items-center justify-between mb-4 text-sm text-gray-300">
                     <span>{total} parts total</span>

@@ -62,7 +62,7 @@ const Header = ({ user }) => {
             <header ref={headerRef} className="sticky top-0 z-50 bg-gray-800 border-b border-gray-700">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-between items-center py-4">
-                        <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                             <div className="w-12 h-12 flex items-center justify-center">
                                 <img
                                     src="/diesel-logo.png"
