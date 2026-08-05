@@ -12,7 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
-    credentials: true
+    credentials: true,
+    exposedHeaders: ['X-Total-Count']
 }));
 app.use(cookieParser());
 app.use(express.json());

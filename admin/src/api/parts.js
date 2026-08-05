@@ -1,7 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function getParts() {
-    const response = await fetch(`${API_URL}/parts`, {
+export async function getParts(page, limit) {
+    const url = page && limit ? `${API_URL}/parts?page=${page}&limit=${limit}` : `${API_URL}/parts`;
+    const response = await fetch(url, {
         credentials: 'include'
     });
 
@@ -9,7 +10,9 @@ export async function getParts() {
         throw new Error('Failed to fetch parts');
     }
 
-    return response.json();
+    const parts = await response.json();
+    const total = Number(response.headers.get('X-Total-Count')) || parts.length;
+    return { parts, total };
 }
 
 export async function createPart(data) {

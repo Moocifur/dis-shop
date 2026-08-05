@@ -11,6 +11,7 @@ function AddPartForm({ onPartAdded }) {
         category: '',
         price: '',
         coreCharge: '',
+        quantityOnHand: '',
         imageUrl: ''
     })
     const [error, setError] = useState('')
@@ -26,7 +27,7 @@ function AddPartForm({ onPartAdded }) {
             const { imageUrl, ...rest } = form
             const newPart = await createPart({ ...rest, images: imageUrl ? [imageUrl] : [] })
             onPartAdded(newPart)
-            setForm({ partNumber: '', description: '', brand: '', category: '', price: '', coreCharge: '', imageUrl: '' })
+            setForm({ partNumber: '', description: '', brand: '', category: '', price: '', coreCharge: '', quantityOnHand: '', imageUrl: '' })
             setIsOpen(false)
         } catch (err) {
             setError(err.message)
@@ -56,6 +57,7 @@ function AddPartForm({ onPartAdded }) {
                     <input name="category" placeholder="Category" value={form.category} onChange={handleChange} required className={inputClass} />
                     <input name="price" placeholder="Price" value={form.price} onChange={handleChange} className={inputClass} />
                     <input name="coreCharge" placeholder="Core Charge" value={form.coreCharge} onChange={handleChange} className={inputClass} />
+                    <input name="quantityOnHand" placeholder="Quantity On Hand" type="number" min="0" value={form.quantityOnHand} onChange={handleChange} className={inputClass} />
                     <input name="imageUrl" placeholder="Image URL (placeholder — paste a hosted link)" value={form.imageUrl} onChange={handleChange} className={`${inputClass} md:col-span-3`} />
                     {error && <p className="text-red-400 text-sm md:col-span-3">{error}</p>}
                     <button

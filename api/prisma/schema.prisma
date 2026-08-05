@@ -32,6 +32,7 @@ model Part {
   scheduleBCode String?
   price Decimal?
   coreCharge Decimal?
+  quantityOnHand Int @default(0)
   images String[]
   active Boolean @default(true)
   lastSyncedAt DateTime @default(now())

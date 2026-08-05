@@ -1,23 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getParts, updatePart, deletePart } from '../api/parts'
 import Nav from '../components/Nav'
 import AddPartForm from '../components/AddPartForm'
-import { Pencil, Trash2, Check, X, Power, PowerOff, Package } from 'lucide-react'
+import { Pencil, Trash2, Check, X, Power, PowerOff, Package, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const PAGE_SIZE = 50
 
 function Parts() {
     const [parts, setParts] = useState([])
+    const [total, setTotal] = useState(0)
+    const [page, setPage] = useState(1)
     const [error, setError] = useState('')
     const [editingId, setEditingId] = useState(null)
     const [editForm, setEditForm] = useState({})
 
-    useEffect(() => {
-        getParts()
-            .then(data => setParts(data))
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
+    const loadPage = useCallback((p) => {
+        getParts(p, PAGE_SIZE)
+            .then(({ parts, total }) => {
+                setParts(parts)
+                setTotal(total)
+            })
             .catch(err => setError(err.message))
     }, [])
 
-    const handlePartAdded = (newPart) => {
-        setParts([...parts, newPart])
+    useEffect(() => {
+        loadPage(page)
+    }, [page, loadPage])
+
+    const handlePartAdded = () => {
+        loadPage(page)
     }
 
     const handleEditClick = (part) => {
@@ -29,6 +42,7 @@ function Parts() {
             category: part.category,
             price: part.price ?? '',
             coreCharge: part.coreCharge ?? '',
+            quantityOnHand: part.quantityOnHand ?? 0,
             imageUrl: part.images?.[0] ?? ''
         })
     }
@@ -40,9 +54,9 @@ function Parts() {
     const handleEditSave = async (id) => {
         try {
             const { imageUrl, ...rest } = editForm
-            const updated = await updatePart(id, { ...rest, images: imageUrl ? [imageUrl] : [] })
-            setParts(parts.map(p => p.id === id ? updated : p))
+            await updatePart(id, { ...rest, images: imageUrl ? [imageUrl] : [] })
             setEditingId(null)
+            loadPage(page)
         } catch (err) {
             setError(err.message)
         }
@@ -51,7 +65,7 @@ function Parts() {
     const handleDelete = async (id) => {
         try {
             await deletePart(id)
-            setParts(parts.filter(p => p.id !== id))
+            loadPage(page)
         } catch (err) {
             setError(err.message)
         }
@@ -59,8 +73,8 @@ function Parts() {
 
     const handleToggleActive = async (part) => {
         try {
-            const updated = await updatePart(part.id, { active: !part.active })
-            setParts(parts.map(p => p.id === part.id ? updated : p))
+            await updatePart(part.id, { active: !part.active })
+            loadPage(page)
         } catch (err) {
             setError(err.message)
         }
@@ -76,6 +90,7 @@ function Parts() {
         { name: 'category', label: 'Category' },
         { name: 'price', label: 'Price' },
         { name: 'coreCharge', label: 'Core Charge' },
+        { name: 'quantityOnHand', label: 'Quantity On Hand' },
         { name: 'imageUrl', label: 'Image URL' }
     ]
 
@@ -96,6 +111,29 @@ function Parts() {
                 <h1 className="text-2xl sm:text-3xl font-bold mb-6">Parts</h1>
                 {error && <p className="text-red-400 mb-4">{error}</p>}
                 <AddPartForm onPartAdded={handlePartAdded} />
+
+                <div className="flex items-center justify-between mb-4 text-sm text-gray-300">
+                    <span>{total} parts total</span>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-gray-400"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                            Prev
+                        </button>
+                        <span>Page {page} of {totalPages}</span>
+                        <button
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-gray-400"
+                        >
+                            Next
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
 
                 {/* Card layout — small screens only */}
                 <div className="md:hidden space-y-4">
@@ -145,6 +183,7 @@ function Parts() {
                                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-300 mb-3">
                                         <div>Price: <span className="text-white font-medium">{part.price ?? '—'}</span></div>
                                         <div>Core: <span className="text-white font-medium">{part.coreCharge ?? '—'}</span></div>
+                                        <div>Qty: <span className="text-white font-medium">{part.quantityOnHand ?? 0}</span></div>
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
@@ -179,6 +218,7 @@ function Parts() {
                                 <th className="px-4 py-3">Category</th>
                                 <th className="px-4 py-3">Price</th>
                                 <th className="px-4 py-3">Core Charge</th>
+                                <th className="px-4 py-3">Qty</th>
                                 <th className="px-4 py-3">Active</th>
                                 <th className="px-4 py-3">Actions</th>
                             </tr>
@@ -195,6 +235,7 @@ function Parts() {
                                             <td className="px-4 py-2"><input name="category" value={editForm.category} onChange={handleEditChange} className={cellInputClass} /></td>
                                             <td className="px-4 py-2"><input name="price" value={editForm.price} onChange={handleEditChange} className={cellInputClass} /></td>
                                             <td className="px-4 py-2"><input name="coreCharge" value={editForm.coreCharge} onChange={handleEditChange} className={cellInputClass} /></td>
+                                            <td className="px-4 py-2"><input name="quantityOnHand" type="number" min="0" value={editForm.quantityOnHand} onChange={handleEditChange} className={cellInputClass} /></td>
                                             <td className="px-4 py-2">{part.active ? 'Yes' : 'No'}</td>
                                             <td className="px-4 py-2">
                                                 <div className="flex gap-2">
@@ -216,6 +257,7 @@ function Parts() {
                                             <td className="px-4 py-3 text-gray-400">{part.category}</td>
                                             <td className="px-4 py-3">{part.price ?? '—'}</td>
                                             <td className="px-4 py-3 text-gray-400">{part.coreCharge ?? '—'}</td>
+                                            <td className="px-4 py-3 text-gray-400">{part.quantityOnHand ?? 0}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-1.5 text-sm">
                                                     <span className={`w-2 h-2 rounded-full ${part.active ? 'bg-green-400' : 'bg-gray-500'}`} />
